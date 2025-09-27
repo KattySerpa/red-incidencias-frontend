@@ -1,0 +1,177 @@
+<div class="container">
+  <h1>Gestión de Usuarios</h1>
+
+  <!-- Messages -->
+  <div *ngIf="error" class="alert alert-error" (click)="clearMessages()">
+    {{ error }}
+  </div>
+  <div *ngIf="success" class="alert alert-success" (click)="clearMessages()">
+    {{ success }}
+  </div>
+
+  <!-- Create User Form -->
+  <div class="form-section">
+    <h2>Crear Usuario</h2>
+    <form (ngSubmit)="createUser()" #createUserForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombre Completo *</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            name="nombre"
+            [(ngModel)]="createForm.nombre" 
+            required
+            class="form-control"
+            [class.error]="createFormErrors.nombre">
+          <div *ngIf="createFormErrors.nombre" class="field-error">{{ createFormErrors.nombre }}</div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email"
+            [(ngModel)]="createForm.email" 
+            required
+            class="form-control"
+            [class.error]="createFormErrors.email">
+          <div *ngIf="createFormErrors.email" class="field-error">{{ createFormErrors.email }}</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="rol">Rol *</label>
+          <select 
+            id="rol" 
+            name="rol"
+            [(ngModel)]="createForm.rol" 
+            required
+            class="form-control">
+            <option *ngFor="let rol of roles" [value]="rol">{{ rol }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña *</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password"
+            [(ngModel)]="createForm.password" 
+            required
+            [readonly]="!createForm.activo"
+            class="form-control"
+            [class.error]="createFormErrors.password"
+            [class.readonly]="!createForm.activo">
+          <div *ngIf="!createForm.activo" class="field-hint">
+            Contraseña inicial por defecto: 1234
+          </div>
+          <div *ngIf="createForm.activo" class="field-hint">
+            Mínimo 8 caracteres, no puede ser "1234"
+          </div>
+          <div *ngIf="createFormErrors.password" class="field-error">{{ createFormErrors.password }}</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              name="activo"
+              [(ngModel)]="createForm.activo"
+              (change)="onActivoChange()">
+            Usuario Activo
+          </label>
+          <div class="field-hint">
+            Inactivo: password temporal "1234", debe cambiarla en primer login<br>
+            Activo: debe ingresar contraseña fuerte (≥8 caracteres)
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="loading">
+        {{ loading ? 'Creando...' : 'Crear Usuario' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-section">
+    <h2>Lista de Usuarios</h2>
+    
+    <div *ngIf="loading && usuarios.length === 0" class="loading">
+      Cargando usuarios...
+    </div>
+
+    <table *ngIf="usuarios.length > 0" class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of usuarios">
+          <td>{{ user.id }}</td>
+          <td>{{ user.nombre }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.rol }}</td>
+          <td>
+            <span [class]="user.activo ? 'status-active' : 'status-inactive'">
+              {{ user.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            <!-- Change Password -->
+            <div *ngIf="!passwordChanges[user.id]">
+              <button 
+                class="btn btn-small btn-secondary" 
+                (click)="initPasswordChange(user.id)">
+                Cambiar Contraseña
+              </button>
+            </div>
+            
+            <div *ngIf="passwordChanges[user.id]" class="password-change">
+              <input 
+                type="password" 
+                [(ngModel)]="passwordChanges[user.id].password"
+                placeholder="Nueva contraseña (min 8 chars)"
+                class="form-control small"
+                [class.error]="passwordChanges[user.id].error">
+              
+              <div class="password-actions">
+                <button 
+                  class="btn btn-small btn-primary" 
+                  (click)="changePassword(user.id)"
+                  [disabled]="passwordChanges[user.id].loading">
+                  {{ passwordChanges[user.id].loading ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button 
+                  class="btn btn-small btn-secondary" 
+                  (click)="cancelPasswordChange(user.id)">
+                  Cancelar
+                </button>
+              </div>
+              
+              <div *ngIf="passwordChanges[user.id].error" class="field-error">
+                {{ passwordChanges[user.id].error }}
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="usuarios.length === 0 && !loading" class="no-data">
+      No hay usuarios registrados.
+    </div>
+  </div>
+</div>

@@ -1,0 +1,140 @@
+.container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+.card { 
+  background: #fff; 
+  padding: 20px; 
+  border-radius: 8px; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+  margin-bottom: 20px; 
+  
+  h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #333;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+}
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.wide { grid-column: span 2; }
+.form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.basic th { text-align: left; padding-right: 8px; }
+.loading { display: flex; justify-content: center; padding: 16px; }
+.error { color: #c62828; margin: 8px 0; }
+
+/* Mantener la sección Cambiar estado en una sola fila */
+.row-one-line {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+}
+
+.field-sm {
+  min-width: 180px;
+  flex: 0 0 180px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.field-lg {
+  min-width: 280px;
+  flex: 1 1 320px;
+}
+
+/* Header con botón de cierre en esquina superior derecha */
+.header--modal { position: relative; }
+.header__close { position: absolute; right: 0; top: 0; }
+
+/* Evidencias: dos columnas 50/50 */
+.row-two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: end; }
+.col-half { width: 100%; }
+.full { width: 100%; }
+
+/* Tabla de evidencias: tamaños de columnas */
+.evid-table { width: 100%; border-collapse: collapse; }
+.evid-table th, .evid-table td { padding: 8px; border-bottom: 1px solid #eee; }
+.evid-table .col-name { width: 70%; }
+.evid-table .col-size { width: 15%; white-space: nowrap; }
+.evid-table .col-action { width: 15%; text-align: center; }
+.evid-table .empty { text-align: center; color: #666; font-style: italic; }
+
+/* Acciones del pie del modal: alineadas a la derecha con espacio */
+.actions--end { 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: 12px; 
+  margin-top: 24px; 
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+/* Estilos para la tabla de bitácora */
+.mat-table {
+  width: 100%;
+  margin-top: 16px;
+  box-shadow: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  
+  th {
+    background-color: #f5f5f5;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.875rem;
+  }
+  
+  td, th {
+    padding: 12px 16px;
+    border-right: 1px solid #e0e0e0;
+    
+    &:last-child {
+      border-right: none;
+    }
+  }
+  
+  tr:not(:last-child) {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+}
+
+/* Estilos para el datepicker */
+.mat-datepicker-content {
+  .mat-calendar {
+    width: 280px;
+  }
+  
+  .mat-calendar-body-selected {
+    background-color: #3f51b5;
+    color: white;
+  }
+}
+
+/* Estilos para los campos de fecha */
+.mat-form-field {
+  .mat-form-field-wrapper {
+    padding-bottom: 0;
+  }
+  
+  .mat-form-field-underline {
+    bottom: 0;
+  }
+  
+  .mat-form-field-infix {
+    padding: 0.5em 0;
+    border-top: 0.84375em solid transparent;
+  }
+}
+
+/* Clase especial para la fecha actual */
+.special-date {
+  .mat-calendar-body-cell-content {
+    border: 1px solid #3f51b5;
+    border-radius: 50%;
+  }
+}

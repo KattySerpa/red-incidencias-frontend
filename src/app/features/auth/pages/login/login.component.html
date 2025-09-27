@@ -1,0 +1,21 @@
+<div class="login-container">
+  <h1>Ingresar</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Usuario</mat-label>
+      <input matInput formControlName="username" placeholder="admin" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" formControlName="password" placeholder="******" required />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" class="full" [disabled]="loading || form.invalid">
+      {{ loading ? 'Ingresando...' : 'Ingresar' }}
+    </button>
+
+    <div class="error" *ngIf="error">{{ error }}</div>
+  </form>
+</div>

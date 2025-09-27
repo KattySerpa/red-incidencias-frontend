@@ -1,0 +1,85 @@
+<div class="container">
+  <h2>Incidencias</h2>
+
+  <div class="actions actions--row">
+    <div class="actions-left">
+      <button mat-raised-button color="primary" (click)="nuevo()" *ngIf="me?.rol === 'TECNICO'">Nueva incidencia</button>
+      <button mat-stroked-button (click)="cargar()">Refrescar</button>
+    </div>
+    <div class="filters">
+      <form [formGroup]="searchForm" (ngSubmit)="buscar()" class="search-form">
+        <mat-form-field appearance="outline" class="search">
+          <mat-label>Buscar por código</mat-label>
+          <input matInput placeholder="Código de incidencia" formControlName="codigo" (keyup.enter)="buscar()">
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-hint>Búsqueda en vivo</mat-hint>
+        </mat-form-field>
+        <button mat-icon-button type="button" (click)="limpiarBusqueda()" title="Limpiar búsqueda" [disabled]="!searchForm.get('codigo')?.value">
+          <mat-icon>clear</mat-icon>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div *ngIf="loading" class="loading loading--overlay">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <table mat-table [dataSource]="filteredData" matSort (matSortChange)="onSort($event)" class="mat-elevation-z1" *ngIf="!loading && !error">
+      <ng-container matColumnDef="codigo">
+        <th mat-header-cell *matHeaderCellDef> Código </th>
+        <td mat-cell *matCellDef="let row"> {{ row.codigo }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="tipoFalla">
+        <th mat-header-cell *matHeaderCellDef> Tipo falla </th>
+        <td mat-cell *matCellDef="let row"> {{ row.tipoFalla }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="antenaNombre">
+        <th mat-header-cell *matHeaderCellDef> Antena </th>
+        <td mat-cell *matCellDef="let row"> {{ row.antenaNombre || row.antenaCodigo || row.antenaId }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="zona">
+        <th mat-header-cell *matHeaderCellDef> Zona </th>
+        <td mat-cell *matCellDef="let row"> {{ row.zonaFull || '-' }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef> Estado </th>
+        <td mat-cell *matCellDef="let row"> {{ row.estado }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="creadoEn">
+        <th mat-header-cell *matHeaderCellDef> Creado </th>
+        <td mat-cell *matCellDef="let row"> {{ row.creadoEn ? (row.creadoEn | date:'dd/MM/yyyy HH:mm:ss') : '-' }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef> Acciones </th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-button color="primary" (click)="ver(row)">Ver</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Paginación -->
+    <div class="pagination-controls" *ngIf="!loading && !error && filteredData.length > 0">
+      <button mat-icon-button (click)="prevPage()" [disabled]="currentPage === 0">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <span class="page-info">
+        Página {{ currentPage + 1 }} • {{ filteredData.length }} registros
+      </span>
+      <button mat-icon-button (click)="nextPage()" [disabled]="filteredData.length < pageSize">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

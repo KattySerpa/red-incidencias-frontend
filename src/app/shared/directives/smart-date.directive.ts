@@ -1,0 +1,57 @@
+import { Directive, HostListener, ElementRef } from '@angular/core';
+
+@Directive({
+  selector: '[smartDate]',
+  standalone: true,
+})
+export class SmartDateDirective {
+  constructor(private el: ElementRef<HTMLInputElement>) {}
+
+  @HostListener('input') onInput() {
+    const input = this.el.nativeElement;
+    let raw = (input.value || '').replace(/[^0-9]/g, '');
+    if (raw.length > 8) raw = raw.slice(0, 8);
+    if (raw.length <= 8) {
+      input.value = this.formatPartial(raw);
+    }
+  }
+
+  @HostListener('blur') onBlur() {
+    const input = this.el.nativeElement;
+    let raw = (input.value || '').replace(/[^0-9]/g, '');
+    if (raw.length > 8) raw = raw.slice(0, 8);
+    const formatted = this.formatFull(raw);
+    if (formatted) input.value = formatted;
+  }
+
+  private formatPartial(raw: string): string {
+    const day = raw.slice(0, 2);
+    const month = raw.slice(2, 4);
+    const year = raw.slice(4, 8);
+    let out = '';
+    if (day) out += day;
+    if (month) out += '/' + month;
+    if (year) out += '/' + year;
+    return out;
+  }
+
+  private formatFull(raw: string): string | null {
+    if (raw.length !== 8) return null;
+    const day = parseInt(raw.slice(0, 2), 10);
+    const month = parseInt(raw.slice(2, 4), 10);
+    const year = parseInt(raw.slice(4, 8), 10);
+    if (!this.isValidDate(day, month, year)) return `${raw.slice(0,2)}/${raw.slice(2,4)}/${raw.slice(4,8)}`;
+    const dd = String(day).padStart(2, '0');
+    const mm = String(month).padStart(2, '0');
+    const yyyy = String(year).padStart(4, '0');
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  private isValidDate(day: number, month: number, year: number): boolean {
+    if (year < 1900 || month < 1 || month > 12 || day < 1) return false;
+    const lastDay = new Date(year, month, 0).getDate();
+    return day <= lastDay;
+  }
+}
+
+

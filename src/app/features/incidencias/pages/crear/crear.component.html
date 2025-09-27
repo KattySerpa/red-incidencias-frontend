@@ -1,0 +1,33 @@
+<div class="container">
+  <h2>Nueva incidencia</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Tipo de falla</mat-label>
+      <mat-select formControlName="tipoFalla" required>
+        <mat-option *ngFor="let t of tiposFalla" [value]="t.value">{{ t.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Antena</mat-label>
+      <mat-select formControlName="antenaId" required>
+        <mat-option *ngFor="let a of antenas" [value]="a.id">{{ a.codigo }} - {{ a.nombre || 'Sin nombre' }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Descripción</mat-label>
+      <textarea matInput rows="3" formControlName="descripcion"></textarea>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-stroked-button type="button" (click)="cancelar()">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="loading || form.invalid">
+        {{ loading ? 'Guardando...' : 'Crear' }}
+      </button>
+    </div>
+
+    <div class="error" *ngIf="error">{{ error }}</div>
+  </form>
+</div>

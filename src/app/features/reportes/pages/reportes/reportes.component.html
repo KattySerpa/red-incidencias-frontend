@@ -1,0 +1,97 @@
+<div class="container">
+  <h2>Reportes</h2>
+
+  <div class="filters">
+    <mat-form-field appearance="outline" class="field-sm">
+      <mat-label>Desde</mat-label>
+      <input matInput [matDatepicker]="desdePicker" [(ngModel)]="desde" smartDate />
+      <mat-datepicker-toggle matIconSuffix [for]="desdePicker"></mat-datepicker-toggle>
+      <mat-datepicker #desdePicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-sm">
+      <mat-label>Hasta</mat-label>
+      <input matInput [matDatepicker]="hastaPicker" [(ngModel)]="hasta" smartDate />
+      <mat-datepicker-toggle matIconSuffix [for]="hastaPicker"></mat-datepicker-toggle>
+      <mat-datepicker #hastaPicker></mat-datepicker>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="buscar()">Buscar</button>
+  </div>
+
+  <div class="filters">
+    <mat-form-field appearance="outline" class="field-sm">
+      <mat-label>Zona</mat-label>
+      <select matNativeControl [(ngModel)]="zonaId">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let z of zonas" [ngValue]="z.id">{{ z.departamento }}{{ z.provincia ? (' / ' + z.provincia) : '' }}{{ z.distrito ? (' / ' + z.distrito) : '' }}</option>
+      </select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-sm">
+      <mat-label>Tipo de falla</mat-label>
+      <select matNativeControl [(ngModel)]="tipoFalla">
+        <option [ngValue]="''">Todos</option>
+        <option *ngFor="let t of tiposFalla" [ngValue]="t.value">{{ t.label }}</option>
+      </select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-sm">
+      <mat-label>Estado</mat-label>
+      <select matNativeControl [(ngModel)]="estado">
+        <option [ngValue]="''">Todos</option>
+        <option *ngFor="let e of estados" [ngValue]="e">{{ e }}</option>
+      </select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="field-md">
+      <mat-label>Técnico (nombre)</mat-label>
+      <input matInput [matAutocomplete]="autoTec" [(ngModel)]="tecnicoTexto" (ngModelChange)="tecnicoAsignadoId = matchTecnicoId(tecnicoTexto)" placeholder="Escribe para autocompletar" />
+      <mat-autocomplete #autoTec="matAutocomplete" (optionSelected)="tecnicoAsignadoId = $event.option.value">
+        <mat-option *ngFor="let t of filteredTecnicos" [value]="t.id">{{ t.nombreCompleto }}</mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </div>
+
+  <div class="cards">
+    <mat-card class="card"><div class="title">MTTR</div><div class="value">{{ mttr || '--' }}</div></mat-card>
+    <mat-card class="card"><div class="title">Total incidencias</div><div class="value">{{ total }}</div></mat-card>
+    <mat-card class="card"><div class="title">Incidencias activas</div><div class="value">{{ activas }}</div></mat-card>
+    <mat-card class="card"><div class="title">Zonas afectadas</div><div class="value">{{ zonasAfectadas || '--' }}</div></mat-card>
+  </div>
+
+  <table mat-table [dataSource]="data" class="mat-elevation-z1">
+    <ng-container matColumnDef="inicio">
+      <th mat-header-cell *matHeaderCellDef> Inicio </th>
+      <td mat-cell *matCellDef="let row"> {{ row.horaInicio ? (row.horaInicio | date:'dd/MM/yyyy HH:mm:ss') : '-' }} </td>
+    </ng-container>
+    <ng-container matColumnDef="cierre">
+      <th mat-header-cell *matHeaderCellDef> Cierre </th>
+      <td mat-cell *matCellDef="let row"> {{ row.horaCierre ? (row.horaCierre | date:'dd/MM/yyyy HH:mm:ss') : '-' }} </td>
+    </ng-container>
+    <ng-container matColumnDef="zona">
+      <th mat-header-cell *matHeaderCellDef> Zona </th>
+      <td mat-cell *matCellDef="let row"> {{ getAntenaNombre(row) }} </td>
+    </ng-container>
+    <ng-container matColumnDef="tipo">
+      <th mat-header-cell *matHeaderCellDef> Tipo falla </th>
+      <td mat-cell *matCellDef="let row"> {{ row.tipoFalla }} </td>
+    </ng-container>
+    <ng-container matColumnDef="tecnico">
+      <th mat-header-cell *matHeaderCellDef> Técnico </th>
+      <td mat-cell *matCellDef="let row"> {{ getTecnicoNombre(row) }} </td>
+    </ng-container>
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef> Estado </th>
+      <td mat-cell *matCellDef="let row"> {{ row.estado }} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <div class="actions actions--end">
+    <button mat-stroked-button (click)="exportar('excel')">Exportar Excel</button>
+    <button mat-stroked-button (click)="exportar('pdf')">Exportar PDF</button>
+  </div>
+</div>

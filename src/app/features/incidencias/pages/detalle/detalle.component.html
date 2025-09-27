@@ -1,0 +1,212 @@
+<div class="container" *ngIf="!loading; else loadingTpl">
+  <div class="header header--modal">
+    <h2>Detalle de incidencia</h2>
+    <button *ngIf="isDialog" class="header__close" mat-icon-button aria-label="Cerrar" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <section *ngIf="incidencia as inc" class="card">
+    <h3>Datos</h3>
+    <table class="basic">
+      <tr><th>Código</th><td>{{ inc.codigo }}</td></tr>
+      <tr><th>Tipo falla</th><td>{{ inc.tipoFalla }}</td></tr>
+      <tr><th>Antena</th><td>{{ inc.antenaNombre || inc.antenaCodigo || inc.antenaId }}</td></tr>
+      <tr><th>Zona</th><td>{{ inc.zonaFull || '-' }}</td></tr>
+      <tr><th>Estado</th><td>{{ inc.estado }}</td></tr>
+      <tr><th>Descripción</th><td>{{ inc.descripcion || '-' }}</td></tr>
+      <tr><th>Técnico asignado</th><td>{{ inc['tecnicoAsignado']?.nombreCompleto || '-' }}</td></tr>
+    </table>
+  </section>
+
+  <div class="grid">
+    <section class="card" *ngIf="!isTecnico">
+      <h3>Asignar técnico</h3>
+      <form [formGroup]="asignarForm" (ngSubmit)="asignar()" class="form row-one-line">
+        <mat-form-field appearance="outline">
+          <mat-label>Técnico</mat-label>
+          <mat-select formControlName="tecnicoId" required>
+            <mat-option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nombre }} ({{ t.email }})</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-raised-button color="primary" [disabled]="asignarForm.invalid">Asignar</button>
+      </form>
+    </section>
+
+    <section class="card" *ngIf="isTecnico && assignedToMe && incidencia?.estado === 'EN_PROGRESO'">
+      <h3>Cambiar estado</h3>
+      <form [formGroup]="estadoForm" class="form row-one-line">
+        <mat-checkbox formControlName="resolved">
+          Marcar como resuelto
+        </mat-checkbox>
+        <mat-form-field appearance="outline" class="field-sm">
+          <mat-label>Fecha inicio</mat-label>
+          <input matInput [matDatepicker]="pickerInicioFecha" formControlName="horaInicioFecha" [matDatepickerFilter]="dateFilter" smartDate />
+          <mat-datepicker-toggle matIconSuffix [for]="pickerInicioFecha"></mat-datepicker-toggle>
+          <mat-datepicker #pickerInicioFecha [startAt]="hoy" [dateClass]="dateClass">
+            <mat-datepicker-actions>
+              <button mat-button matDatepickerCancel>Cancelar</button>
+              <button mat-raised-button color="primary" matDatepickerApply>Aplicar</button>
+            </mat-datepicker-actions>
+          </mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="field-sm">
+          <mat-label>Hora inicio</mat-label>
+          <input matInput type="time" formControlName="horaInicioHora" min="00:00" max="23:59" step="60" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="field-sm">
+          <mat-label>Fecha cierre</mat-label>
+          <input matInput [matDatepicker]="pickerCierreFecha" formControlName="horaCierreFecha" [matDatepickerFilter]="dateFilter" smartDate />
+          <mat-datepicker-toggle matIconSuffix [for]="pickerCierreFecha"></mat-datepicker-toggle>
+          <mat-datepicker #pickerCierreFecha [startAt]="hoy" [dateClass]="dateClass">
+            <mat-datepicker-actions>
+              <button mat-button matDatepickerCancel>Cancelar</button>
+              <button mat-raised-button color="primary" matDatepickerApply>Aplicar</button>
+            </mat-datepicker-actions>
+          </mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="field-sm">
+          <mat-label>Hora cierre</mat-label>
+          <input matInput type="time" formControlName="horaCierreHora" min="00:00" max="23:59" step="60" />
+        </mat-form-field>
+        <span class="spacer"></span>
+      </form>
+      <small>Solo puedes marcar RESUELTO si la incidencia te fue asignada y está EN_PROGRESO.</small>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section class="card wide" *ngIf="isTecnico && assignedToMe && incidencia?.estado === 'EN_PROGRESO'">
+      <h3>Evidencias</h3>
+      <form [formGroup]="evidenciaForm" class="row-two-cols">
+        <div class="col-half">
+          <button mat-raised-button color="primary" type="button" (click)="$event.preventDefault(); fileInput.click()">
+            Seleccionar archivo
+          </button>
+          <input #fileInput type="file" (change)="onFileChange($event)" accept=".jpg,.jpeg,.png,.pdf" hidden />
+        </div>
+        <div class="col-half">
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Comentario</mat-label>
+            <input matInput formControlName="comentario" />
+          </mat-form-field>
+        </div>
+      </form>
+      <table class="basic evid-table">
+        <thead>
+          <tr>
+            <th class="col-name">Archivo</th>
+            <th class="col-size">Tamaño</th>
+            <th class="col-action">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!pendingEvidencias.length">
+            <td colspan="3" class="empty">Ningún archivo cargado</td>
+          </tr>
+          <tr *ngFor="let p of pendingEvidencias; let i = index">
+            <td class="col-name">{{ p.file.name }}</td>
+            <td class="col-size">{{ p.file.size | number }} bytes</td>
+            <td class="col-action">
+              <button mat-icon-button color="warn" (click)="removePendingEvidencia(i)" aria-label="Quitar">
+                <mat-icon>close</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card wide">
+      <h3>Bitácora</h3>
+      <table mat-table [dataSource]="sortedBitacora" class="mat-elevation-z1">
+        <!-- Nro de Orden Column -->
+        <ng-container matColumnDef="nro">
+          <th mat-header-cell *matHeaderCellDef>Nro</th>
+          <td mat-cell *matCellDef="let element">{{element.nro}}</td>
+        </ng-container>
+
+        <!-- Código Column -->
+        <ng-container matColumnDef="codigo">
+          <th mat-header-cell *matHeaderCellDef>Código</th>
+          <td mat-cell *matCellDef="let element">{{element.codigo || '-'}}</td>
+        </ng-container>
+
+        <!-- Estado Column -->
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let element">{{element.estado || '-'}}</td>
+        </ng-container>
+
+        <!-- Fecha de Creación Column -->
+        <ng-container matColumnDef="fechaCreacion">
+          <th mat-header-cell *matHeaderCellDef>Fecha Creación</th>
+          <td mat-cell *matCellDef="let element">{{element.fechaCreacion || '-'}}</td>
+        </ng-container>
+
+        <!-- Fecha Inicio Incidencia Column -->
+        <ng-container matColumnDef="fechaInicio">
+          <th mat-header-cell *matHeaderCellDef>Inicio Incidencia</th>
+          <td mat-cell *matCellDef="let element">{{element.fechaInicio || '-'}}</td>
+        </ng-container>
+
+        <!-- Fecha Cierre Incidencia Column -->
+        <ng-container matColumnDef="fechaCierre">
+          <th mat-header-cell *matHeaderCellDef>Cierre Incidencia</th>
+          <td mat-cell *matCellDef="let element">{{element.fechaCierre || '-'}}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="bitacoraColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: bitacoraColumns;"></tr>
+      </table>
+    </section>
+
+    <!-- Evidencias (solo JEFE y estado RESUELTO) -->
+    <section *ngIf="!isTecnico && incidencia?.estado === 'RESUELTO'" class="evidencias-section">
+      <h3>Evidencias</h3>
+      <div *ngIf="evidencias && evidencias.length > 0; else noEvidencias">
+        <table mat-table [dataSource]="evidencias" class="evidencias-table">
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Archivo</th>
+            <td mat-cell *matCellDef="let evidencia">{{ evidencia.nombreArchivo }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="tamaño">
+            <th mat-header-cell *matHeaderCellDef>Tamaño</th>
+            <td mat-cell *matCellDef="let evidencia">{{ evidencia.sizeBytes || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Fecha</th>
+            <td mat-cell *matCellDef="let evidencia">{{ evidencia.subidoEn | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let evidencia">
+              <button mat-icon-button title="Ver archivo">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['nombre', 'tamaño', 'fecha', 'acciones']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['nombre', 'tamaño', 'fecha', 'acciones'];"></tr>
+        </table>
+      </div>
+      <ng-template #noEvidencias>
+        <p class="no-evidencias">Ningún archivo cargado</p>
+      </ng-template>
+    </section>
+  </div>
+
+  <div class="actions actions--end">
+    <button *ngIf="isDialog" mat-stroked-button (click)="close()">Salir</button>
+    <button mat-raised-button color="primary" (click)="guardarTodo()">Guardar</button>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loading"><span>Cargando...</span></div>
+</ng-template>

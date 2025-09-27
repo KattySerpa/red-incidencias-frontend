@@ -1,0 +1,26 @@
+.container {
+  max-width: 720px;
+  margin: 24px auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+}
+
+.half { flex: 1; }
+.full { width: 100%; }
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.error { color: #c62828; margin-top: 8px; }
